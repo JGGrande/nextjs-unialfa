@@ -1,86 +1,85 @@
 "use client"
 
-import { SyntheticEvent, useCallback, useRef } from "react";
+import { SyntheticEvent, useCallback, useRef, useState } from "react";
 import styles from "./style.module.css";
+import { api } from "@/lib/api";
+import { Toast } from "@/components/toast";
+import { Loading } from "@/components/loading";
+
+type FormTarget = EventTarget & {
+    email: {
+        value: string;
+    };
+    password: {
+        value: string;
+    }
+}
 
 export default function Login(){
     
+    const [ showToast, setShowToast ] = useState(false);
+    const [ loading, setLoading ] = useState(false);
+
     const refForm = useRef<HTMLFormElement>(null);
 
     const submitForm = useCallback((event: SyntheticEvent) => {
         event.preventDefault();
+        setLoading(true)
+        if(refForm.current?.checkValidity()){
+            const { email, password } = event.target as FormTarget;
+        
+            api.post('/api/login', {
+                email: email.value,
+                password: password.value
+            })
+            .then(response => {
+                setLoading(false)
+                console.log(response)
+            })
+            .catch(error => {
+                setLoading(false)
+                console.error(error)
+                setShowToast(true)
+            })
+        }else{
+            refForm.current?.classList.add("invalid:border-red-500")
+        }
 
     }, [ refForm ]);
     
     return (
         <>
-            <div
-                // className={styles.main}
-                className="flex flex-col justify-center items-center w-screen h-screen"
-            >
-                <div
-                    // className={styles.border}
-                    className="border-solid rounded-md border-2 p-5 border-slate-700 w-4/12 h-5/12"
-                >
-                    <div className="flex flex-col items-center mb-3">
-                        <h1 className="text-blue-500 text text-5xl">Login</h1>
+            { loading && <Loading /> }  
+
+            <Toast 
+                show={showToast}
+                message="Dados invalidos"
+                bgColor="danger"
+                onClose={() => setShowToast(false)}
+            />
+            <div className="flex flex-col items-center justify-center px-6 py-8 md:h-screen">
+                <div className="w-full max-w-md bg-white rounded-lg shadow border">
+                    <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
+                        <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl">
+                            Faça login na sua conta
+                        </h1>
+                        <form ref={refForm} className="space-y-4 md:space-y-6" onSubmit={submitForm}>
+                            <div>
+                                <label className="block mb-2 text-sm font-medium text-gray-900">Seu email</label>
+                                <input type="email" name="email" id="email" className="bg-gray-100 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder-gray-400" placeholder="Digite seu email" required />
+                            </div>
+                            <div>
+                                <label className="block mb-2 text-sm font-medium text-gray-900">Senha</label>
+                                <input type="password" name="password" id="password" placeholder="Digite sua senha" className="bg-gray-100 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder-gray-400" required />
+                            </div>
+                            <button type="submit" className="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Login</button>
+                        </form>
                     </div>
-                    <hr />
-                    <form
-                        className="items-center mt-6"
-                        onSubmit={submitForm}
-                        ref={refForm}
-                    >
-                        <div
-                            className="md:w-full pr-4 pl-4"
-                        >
-                            <label
-                                className="block text-sm font-medium text-slate-700"
-                            >
-                                Email
-                            </label>
-                            <input 
-                                type="email"
-                                className="block peer appearance-none w-full py-1 px-2 mb-1 text-base leading-normal bg-white text-gray-800 border border-gray-200 rounded"
-                                placeholder="Digite seu email"
-                                id="email"
-                                required
-                            />
-                            <div
-                                className="mt-2 hidden peer-invalid:visible text-pink-600 text-sm"
-                            >
-                                Porfavor digite seu email.
-                            </div>    
-                        </div>
-                        <div
-                            className="md:w-full pr-4 pl-4 mt-6"
-                        >
-                            <label
-                                className="block text-sm font-medium text-slate-700"
-                            >
-                                Senha
-                            </label>
-                            <input 
-                                type="password"
-                                className="block peer appearance-none w-full py-1 px-2 mb-1 text-base leading-normal bg-white text-gray-800 border border-gray-200 rounded"
-                                placeholder="Digite sua senha"
-                                id="senha"
-                                required
-                            />
-                            <div
-                                className="mt-2 hidden peer-invalid:visible text-pink-600 text-sm"
-                            >
-                                Porfavor digite sua senha.
-                            </div>    
-                        </div>
-                        <div className=" pr-4 pl-4 mt-6">
-                            <button type="submit" className="bg-blue-500 w-full hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                Enviar
-                            </button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </>
     );
+    
+    
 }
+

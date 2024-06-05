@@ -1,10 +1,10 @@
 "use client"
 
-import { SyntheticEvent, useCallback, useRef, useState } from "react";
-import styles from "./style.module.css";
-import { api } from "@/lib/api";
-import { Toast } from "@/components/toast";
 import { Loading } from "@/components/loading";
+import { Toast } from "@/components/toast";
+import { api } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { SyntheticEvent, useCallback, useRef, useState } from "react";
 
 type FormTarget = EventTarget & {
     email: {
@@ -16,11 +16,12 @@ type FormTarget = EventTarget & {
 }
 
 export default function Login(){
-    
-    const [ showToast, setShowToast ] = useState(false);
-    const [ loading, setLoading ] = useState(false);
+    const [showToast, setShowToast] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const refForm = useRef<HTMLFormElement>(null);
+
+    const router = useRouter();
 
     const submitForm = useCallback((event: SyntheticEvent) => {
         event.preventDefault();
@@ -34,29 +35,31 @@ export default function Login(){
             })
             .then(response => {
                 setLoading(false)
-                console.log(response)
+
+                router.push("/dashboard");
             })
             .catch(error => {
-                setLoading(false)
                 console.error(error)
+                setLoading(false)
                 setShowToast(true)
             })
         }else{
             refForm.current?.classList.add("invalid:border-red-500")
         }
 
-    }, [ refForm ]);
+    }, [refForm]);
     
     return (
         <>
-            { loading && <Loading /> }  
+            <Loading show={loading} />
 
             <Toast 
                 show={showToast}
-                message="Dados invalidos"
-                bgColor="danger"
+                text="Dados invalidos"
+                type="error"
                 onClose={() => setShowToast(false)}
             />
+
             <div className="flex flex-col items-center justify-center px-6 py-8 md:h-screen">
                 <div className="w-full max-w-md bg-white rounded-lg shadow border">
                     <div className="p-6 space-y-4 md:space-y-6 sm:p-8">

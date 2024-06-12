@@ -31,7 +31,7 @@ export async function POST(req: Request){
             userWithoutSenha,
             'Grande',
             {
-                expiresIn: "1h"
+                expiresIn: "1d"
             }
         );
 

@@ -4,6 +4,7 @@ import { Loading } from "@/components/loading";
 import { Toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { setCookie } from "nookies";
 import { SyntheticEvent, useCallback, useRef, useState } from "react";
 
 type FormTarget = EventTarget & {
@@ -15,6 +16,16 @@ type FormTarget = EventTarget & {
     }
 }
 
+type LoginResponse = {
+    user: {
+        id: string;
+        nome: string;
+        email: string;
+        permissoes: string;
+    };
+    token: string;
+}
+
 export default function Login(){
     const [showToast, setShowToast] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -24,7 +35,7 @@ export default function Login(){
     const router = useRouter();
 
     const submitForm = useCallback((event: SyntheticEvent) => {
-        event.preventDefault();
+        event.preventDefault(); 
         setLoading(true)
         if(refForm.current?.checkValidity()){
             const { email, password } = event.target as FormTarget;
@@ -34,14 +45,20 @@ export default function Login(){
                 password: password.value
             })
             .then(response => {
-                setLoading(false)
+                setLoading(false);
+                
+                const { user, token } = response.data as LoginResponse;
+
+                setCookie(undefined, "@painel-1pitchau-token", token);
+
+                localStorage.setItem("@painel-1pitchau-user", JSON.stringify(user));
 
                 router.push("/dashboard");
             })
             .catch(error => {
-                console.error(error)
-                setLoading(false)
-                setShowToast(true)
+                console.error(error);
+                setLoading(false);
+                setShowToast(true);
             })
         }else{
             refForm.current?.classList.add("invalid:border-red-500")

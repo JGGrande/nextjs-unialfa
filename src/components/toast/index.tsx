@@ -1,7 +1,6 @@
 // import { Toast as ToastBootstrap } from "react-bootstrap";
 import { message } from "antd";
 import { NoticeType } from "antd/es/message/interface";
-import { ArgsProps } from "antd/es/notification";
 import { useEffect } from "react";
 
 type ToastProps = {

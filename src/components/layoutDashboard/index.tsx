@@ -1,50 +1,94 @@
-export const LayoutDashboard = () => {
+"use client"
+
+import { ReactNode, useState } from "react";
+import { Button, Layout, Menu, theme } from "antd";
+import { Content, Header } from "antd/es/layout/layout";
+import Sider from "antd/es/layout/Sider";
+import {
+    LineChartOutlined,
+    MenuFoldOutlined,
+    MenuUnfoldOutlined,
+    UserOutlined,
+    BarsOutlined
+} from '@ant-design/icons';
+import TokenService from "../../services/token";
+
+
+interface ILayoutDashboardProps {
+    token: string;
+    children?: ReactNode;
+}
+
+export const LayoutDashboard = ({ children, token }: ILayoutDashboardProps) => {
+    const [collapsed, setCollapsed] = useState(false);
+
+    const {
+        token: { colorBgContainer, borderRadiusLG },
+    } = theme.useToken();
+
+    const menuItems = [];
+
+    if(TokenService.havePermission(token,["admin", "colaborador"])){
+        menuItems.push({
+            key: String(menuItems.length + 1),
+            label: 'Dashboard',
+            icon: <LineChartOutlined />,
+        });
+    }
+
+    if(TokenService.havePermission(token, ["admin", "colaborador"])){
+        menuItems.push({
+            key: String(menuItems.length + 1),
+            label: 'Categorias',
+            icon: <BarsOutlined />,
+        });
+    }
+
+    if(TokenService.havePermission(token, ["admin"])){
+        menuItems.push({
+            key: String(menuItems.length + 1),
+            label: 'Usuários',
+            icon: <UserOutlined />,
+        }); 
+    }
+
     return (
         <>
-            <header className="navbar navbar-dark sticky-top bg-gray-900 flex md:flex-row flex-wrap md:flex-nowrap items-center justify-between p-0">
-                <a href="#" className="navbar-brand col-md-3 col-lg-2 px-3 me-auto">
-                    Painel 1Pitchau
-                </a>
-                <button
-                    className="navbar-toggler position-absolute d-md-none collapsed bg-gray-600 text-gray-300"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#sidebarMenu"
-                    aria-controls="sidebarMenu"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation"
-                >
-                    <span className="navbar-toggler-icon" />
-                </button>
-
-                <div className="w-full"></div>
-                <div className="navbar-nav flex-row">
-                    <div className="nav-item text-nowrap">
-                        <a href="#" className="nav-link px-3 text-gray-300">Sair</a>
-                    </div>
-                </div>
-            </header>
-
-            <div className="container-fluid">
-                <div className="row">
-                    <nav id="sidebarMenu" className="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-                        <div className="sticky top-0 pt-3">
-                            <ul className="nav flex-column">
-                                <li className="nav-item">
-                                    <a href="/dashboard" className="nav-link">
-                                        <span data-feather="home" />
-                                        Dashboard
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </nav>
-
-                    <main className="col-md-9 ms-auto col-lg-10 px-4">
-                        {/* Conteúdo principal aqui */}
-                    </main>
-                </div>
-            </div>
+            <Layout style={{ height: "100vh", width: "100vw" }} >
+                <Sider  trigger={null} collapsible collapsed={collapsed}>
+                    <Menu
+                        theme="dark"
+                        mode="inline"
+                        defaultSelectedKeys={[menuItems[0].key]}
+                        items={menuItems}
+                    />
+                </Sider>
+                <Layout>
+                    <Header style={{ padding: 0, background: colorBgContainer }}>
+                    <Button
+                        type="text"
+                        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                        onClick={() => setCollapsed(!collapsed)}
+                        style={{
+                            fontSize: '16px',
+                            width: 64,
+                            height: 64,
+                        }}
+                    />
+                    </Header>
+                    <Content
+                        style={{
+                            margin: '24px 16px',
+                            padding: 24,
+                            minHeight: 280,
+                            background: colorBgContainer,
+                            borderRadius: borderRadiusLG,
+                        }}
+                    >
+                        { children }
+                    </Content>
+                </Layout>
+            </Layout>
         </>
-    )
+    );
 }
